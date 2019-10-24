@@ -93,10 +93,8 @@ export interface FormState<FormValues extends FieldValues = FieldValues> {
     isSubmitting: boolean;
     isValid: boolean;
 }
-export interface NameProp {
+export interface ElementLike {
     name: string;
-}
-export interface ElementLike extends NameProp {
     type?: string;
     value?: string;
     checked?: boolean;

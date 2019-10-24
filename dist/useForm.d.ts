@@ -1,8 +1,8 @@
 import React from 'react';
-import { FieldValues, FieldName, Options, OnSubmit, ValidationPayload, ElementLike, NameProp } from './types';
+import { FieldValues, FieldName, Options, OnSubmit, ValidationPayload, ElementLike } from './types';
 export default function useForm<FormValues extends FieldValues = FieldValues>({ mode, reValidateMode, validationSchema, defaultValues, validationFields, nativeValidation, submitFocusError, validationSchemaOption, }?: Options<FormValues>): {
     register: {
-        <Element_1>(validateRule: Partial<{
+        <Element_1 extends ElementLike = ElementLike>(validateRule: Partial<{
             required: string | boolean;
             min: string | number | {
                 value: string | number;
@@ -28,62 +28,8 @@ export default function useForm<FormValues extends FieldValues = FieldValues>({ 
                 value: import("./types").Validate | Record<string, import("./types").Validate>;
                 message: string;
             };
-        }> & NameProp): (ref: Element_1 | null) => void;
-        <Element_2 extends ElementLike = ElementLike>(validateRule: Partial<{
-            required: string | boolean;
-            min: string | number | {
-                value: string | number;
-                message: string;
-            };
-            max: string | number | {
-                value: string | number;
-                message: string;
-            };
-            maxLength: string | number | {
-                value: string | number;
-                message: string;
-            };
-            minLength: string | number | {
-                value: string | number;
-                message: string;
-            };
-            pattern: RegExp | {
-                value: RegExp;
-                message: string;
-            };
-            validate: import("./types").Validate | Record<string, import("./types").Validate> | {
-                value: import("./types").Validate | Record<string, import("./types").Validate>;
-                message: string;
-            };
-        }>): (ref: Element_2 | null) => void;
-        <Element_3>(ref: Element_3 | null, validateRule: Partial<{
-            required: string | boolean;
-            min: string | number | {
-                value: string | number;
-                message: string;
-            };
-            max: string | number | {
-                value: string | number;
-                message: string;
-            };
-            maxLength: string | number | {
-                value: string | number;
-                message: string;
-            };
-            minLength: string | number | {
-                value: string | number;
-                message: string;
-            };
-            pattern: RegExp | {
-                value: RegExp;
-                message: string;
-            };
-            validate: import("./types").Validate | Record<string, import("./types").Validate> | {
-                value: import("./types").Validate | Record<string, import("./types").Validate>;
-                message: string;
-            };
-        }> & NameProp): void;
-        <Element_4 extends ElementLike = ElementLike>(ref: Element_4 | null, validationOptions?: Partial<{
+        }>): (ref: Element_1 | null) => void;
+        <Element_2 extends ElementLike = ElementLike>(ref: Element_2 | null, validationOptions?: Partial<{
             required: string | boolean;
             min: string | number | {
                 value: string | number;

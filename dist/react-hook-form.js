@@ -21,13 +21,13 @@ const EVENTS = {
     INPUT: 'input',
 };
 
-function attachEventListeners({ field, validateAndStateUpdate, isRadio, }) {
+function attachEventListeners({ field, validateAndStateUpdate, isRadio, isOnBlur, isReValidateOnBlur, }) {
     const { ref } = field;
-    if (!ref.addEventListener) {
+    if (!ref.addEventListener)
         return;
-    }
     ref.addEventListener(isCheckBoxInput(ref.type) || isRadio ? EVENTS.CHANGE : EVENTS.INPUT, validateAndStateUpdate);
-    ref.addEventListener(EVENTS.BLUR, validateAndStateUpdate);
+    if (isOnBlur || isReValidateOnBlur)
+        ref.addEventListener(EVENTS.BLUR, validateAndStateUpdate);
 }
 
 var isUndefined = (val) => val === undefined;
@@ -47,9 +47,8 @@ function isIndex(value) {
     return reIsUint.test(value) && value > -1;
 }
 function isKey(value) {
-    if (isArray(value)) {
+    if (isArray(value))
         return false;
-    }
     return reIsPlainProp.test(value) || !reIsDeepProp.test(value);
 }
 const stringToPath = (string) => {
@@ -91,9 +90,8 @@ var combineFieldValues = (data) => Object.entries(data).reduce((previous, [key, 
 }, {});
 
 var removeAllEventListeners = (ref, validateWithStateUpdate) => {
-    if (!ref.removeEventListener) {
+    if (!ref.removeEventListener)
         return;
-    }
     ref.removeEventListener(EVENTS.INPUT, validateWithStateUpdate);
     ref.removeEventListener(EVENTS.CHANGE, validateWithStateUpdate);
     ref.removeEventListener(EVENTS.BLUR, validateWithStateUpdate);
@@ -102,24 +100,20 @@ var removeAllEventListeners = (ref, validateWithStateUpdate) => {
 var isRadioInput = (type) => type === RADIO_INPUT;
 
 function isDetached(element) {
-    if (!element) {
+    if (!element)
         return true;
-    }
     if (!(element instanceof HTMLElement) ||
-        element.nodeType === Node.DOCUMENT_NODE) {
+        element.nodeType === Node.DOCUMENT_NODE)
         return false;
-    }
     return isDetached(element.parentNode);
 }
 
 function findRemovedFieldAndRemoveListener(fields, validateWithStateUpdate = () => { }, field, forceDelete = false) {
-    if (!field) {
+    if (!field)
         return;
-    }
     const { ref, mutationWatcher, options } = field;
-    if (!ref || !ref.type) {
+    if (!ref || !ref.type)
         return;
-    }
     const { name, type } = ref;
     if (isRadioInput(type) && options) {
         options.forEach(({ ref }, index) => {
@@ -129,15 +123,13 @@ function findRemovedFieldAndRemoveListener(fields, validateWithStateUpdate = () 
                 options.splice(index, 1);
             }
         });
-        if (!options.length) {
+        if (!options.length)
             delete fields[name];
-        }
     }
     else if (isDetached(ref) || forceDelete) {
         removeAllEventListeners(ref, validateWithStateUpdate);
-        if (mutationWatcher) {
+        if (mutationWatcher)
             mutationWatcher.disconnect();
-        }
         delete fields[name];
     }
 }
@@ -170,9 +162,8 @@ function getFieldValue(fields, ref) {
         const field = fields[name];
         return field ? getRadioValue(field.options).value : '';
     }
-    if (isMultipleSelect(type)) {
+    if (isMultipleSelect(type))
         return getMultipleSelectValue(options);
-    }
     if (isCheckBoxInput(type)) {
         if (checked) {
             return ref.attributes && ref.attributes.value
@@ -225,9 +216,8 @@ var getValueAndMessage = (validationData) => ({
 var isString = (value) => typeof value === 'string';
 
 var displayNativeError = (nativeValidation, ref, message) => {
-    if (nativeValidation && isString(message)) {
+    if (nativeValidation && isString(message))
         ref.setCustomValidity(message);
-    }
 };
 
 var isFunction = (value) => typeof value === 'function';
@@ -275,20 +265,16 @@ var validateField = async ({ ref, ref: { type, value, name, checked }, options, 
         const { value: minValue, message: minMessage } = getValueAndMessage(min);
         if (type === 'number') {
             const valueNumber = parseFloat(value);
-            if (!isNullOrUndefined(maxValue)) {
+            if (!isNullOrUndefined(maxValue))
                 exceedMax = valueNumber > maxValue;
-            }
-            if (!isNullOrUndefined(minValue)) {
+            if (!isNullOrUndefined(minValue))
                 exceedMin = valueNumber < minValue;
-            }
         }
         else {
-            if (isString(maxValue)) {
+            if (isString(maxValue))
                 exceedMax = new Date(value) > new Date(maxValue);
-            }
-            if (isString(minValue)) {
+            if (isString(minValue))
                 exceedMin = new Date(value) < new Date(minValue);
-            }
         }
         if (exceedMax || exceedMin) {
             const message = exceedMax ? maxMessage : minMessage;
@@ -345,9 +331,6 @@ var validateField = async ({ ref, ref: { type, value, name, checked }, options, 
             const validationResult = await new Promise((resolve) => {
                 const values = Object.entries(validate);
                 values.reduce(async (previous, [key, validate], index) => {
-                    if (!isEmptyObject(await previous)) {
-                        return resolve(previous);
-                    }
                     const lastChild = values.length - 1 === index;
                     if (isFunction(validate)) {
                         const result = await validate(fieldValue);
@@ -365,9 +348,8 @@ var validateField = async ({ ref, ref: { type, value, name, checked }, options, 
             }
         }
     }
-    if (nativeValidation) {
+    if (nativeValidation)
         ref.setCustomValidity('');
-    }
     return error;
 };
 
@@ -436,9 +418,8 @@ const getPath = (path, values) => isArray(values)
 var getPath$1 = (parentPath, value) => flatArray(getPath(parentPath, value));
 
 var assignWatchFields = (fieldValues, fieldName, watchFields) => {
-    if (isNullOrUndefined(fieldValues) || isEmptyObject(fieldValues)) {
+    if (isNullOrUndefined(fieldValues) || isEmptyObject(fieldValues))
         return undefined;
-    }
     if (!isUndefined(fieldValues[fieldName])) {
         watchFields[fieldName] = true;
         return fieldValues[fieldName];
@@ -509,22 +490,19 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
     const renderBaseOnError = React.useCallback((name, error, shouldRender = true) => {
         if (isEmptyObject(error)) {
             delete errorsRef.current[name];
-            if (fieldsWithValidationRef.current.has(name) || validationSchema) {
+            if (fieldsWithValidationRef.current.has(name) || validationSchema)
                 validFieldsRef.current.add(name);
-            }
         }
         else {
             validFieldsRef.current.delete(name);
         }
-        if (shouldRender) {
+        if (shouldRender)
             render({});
-        }
     }, [validationSchema]);
     const setFieldValue = (name, rawValue) => {
         const field = fieldsRef.current[name];
-        if (!field) {
+        if (!field)
             return false;
-        }
         const ref = field.ref;
         const { type } = ref;
         const options = field.options;
@@ -547,9 +525,8 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
         return type;
     };
     const setDirty = (name) => {
-        if (!fieldsRef.current[name]) {
+        if (!fieldsRef.current[name])
             return false;
-        }
         const isDirty = defaultValuesRef.current[name] !==
             getFieldValue(fieldsRef.current, fieldsRef.current[name].ref);
         const isDirtyChanged = dirtyFieldsRef.current.has(name) !== isDirty;
@@ -573,12 +550,10 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
     }, []);
     const executeValidation = React.useCallback(async ({ name, value, }, shouldRender = true) => {
         const field = fieldsRef.current[name];
-        if (!field) {
+        if (!field)
             return false;
-        }
-        if (!isUndefined(value)) {
+        if (!isUndefined(value))
             setValueInternal(name, value);
-        }
         const error = await validateField(field, fieldsRef.current);
         errorsRef.current = combineErrorsRef(error);
         renderBaseOnError(name, error, shouldRender);
@@ -601,9 +576,8 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
     }, [validateWithSchemaCurry]);
     const triggerValidation = React.useCallback(async (payload, shouldRender) => {
         const fields = payload || Object.keys(fieldsRef.current).map(name => ({ name }));
-        if (validationSchema) {
+        if (validationSchema)
             return executeSchemaValidation(fields);
-        }
         if (isArray(fields)) {
             const result = await Promise.all(fields.map(async (data) => await executeValidation(data, false)));
             render({});
@@ -617,9 +591,8 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
         if (shouldValidate) {
             return triggerValidation({ name }, shouldRender);
         }
-        if (shouldRender) {
+        if (shouldRender)
             render({});
-        }
         return;
     }, [setValueInternal, triggerValidation]);
     validateAndUpdateStateRef.current = validateAndUpdateStateRef.current
@@ -628,16 +601,14 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
             const { type, target } = event;
             const name = target ? target.name : '';
             if (isArray(validationFieldsRef.current) &&
-                !validationFieldsRef.current.includes(name)) {
+                !validationFieldsRef.current.includes(name))
                 return;
-            }
             const fields = fieldsRef.current;
             const errors = errorsRef.current;
             const ref = fields[name];
             let error;
-            if (!ref) {
+            if (!ref)
                 return;
-            }
             const isBlurEvent = type === EVENTS.BLUR;
             const shouldSkipValidation = (isOnSubmit && !isSubmittedRef.current) ||
                 (isOnBlur && !isBlurEvent && !errors[name]) ||
@@ -647,13 +618,12 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
             let shouldUpdateState = isWatchAllRef.current ||
                 watchFieldsRef.current[name] ||
                 shouldUpdateDirty;
-            if (isBlurEvent && !touchedFieldsRef.current.has(name)) {
+            if (!touchedFieldsRef.current.has(name)) {
                 touchedFieldsRef.current.add(name);
                 shouldUpdateState = true;
             }
-            if (shouldSkipValidation) {
+            if (shouldSkipValidation)
                 return shouldUpdateState ? render({}) : undefined;
-            }
             if (validationSchema) {
                 const { fieldErrors } = await validateWithSchemaCurry(combineFieldValues(getFieldsValues(fields)));
                 schemaErrorsRef.current = fieldErrors;
@@ -677,9 +647,8 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
                 renderBaseOnError(name, error);
                 return;
             }
-            if (shouldUpdateState) {
+            if (shouldUpdateState)
                 render({});
-            }
         };
     const resetFieldRef = (name) => {
         delete watchFieldsRef.current[name];
@@ -694,9 +663,8 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
         ].forEach(data => data.current.delete(name));
     };
     const removeEventListenerAndRef = React.useCallback((field, forceDelete) => {
-        if (!field) {
+        if (!field)
             return;
-        }
         findRemovedFieldAndRemoveListener(fieldsRef.current, validateAndUpdateStateRef.current, field, forceDelete);
         resetFieldRef(field.ref.name);
     }, []);
@@ -740,9 +708,8 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
                 }
                 else {
                     const tempValue = assignWatchFields(fieldValues, name, watchFields);
-                    if (!isUndefined(tempValue)) {
+                    if (!isUndefined(tempValue))
                         value = tempValue;
-                    }
                 }
                 return Object.assign(Object.assign({}, previous), { [name]: value });
             }, {});
@@ -753,9 +720,8 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
             defaultValues);
     }
     function registerIntoFieldsRef(ref, validateOptions = {}) {
-        if (!ref.name) {
+        if (!ref.name)
             return console.warn('Missing name on ref', ref);
-        }
         const { name, type, value } = ref;
         const typedName = name;
         const fieldAttributes = Object.assign({ ref }, validateOptions);
@@ -767,9 +733,8 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
                 isArray(currentField.options) &&
                 currentField.options.find(({ ref }) => value === ref.value)
             : currentField;
-        if (isRegistered) {
+        if (isRegistered)
             return;
-        }
         if (!type) {
             currentField = fieldAttributes;
         }
@@ -793,49 +758,40 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
         fields[typedName] = currentField;
         if (!isEmptyObject(defaultValues)) {
             const defaultValue = getDefaultValue(defaultValues, name);
-            if (!isUndefined(defaultValue)) {
+            if (!isUndefined(defaultValue))
                 setFieldValue(name, defaultValue);
-            }
         }
         if (validateOptions && !isEmptyObject(validateOptions)) {
-            if (!validationFields || validationFields.includes(name)) {
-                fieldsWithValidationRef.current.add(name);
-            }
+            fieldsWithValidationRef.current.add(name);
             if (!isOnSubmit) {
                 if (validationSchema) {
                     isSchemaValidateTriggeredRef.current = true;
                     validateWithSchemaCurry(combineFieldValues(getFieldsValues(fields))).then(({ fieldErrors }) => {
                         schemaErrorsRef.current = fieldErrors;
-                        if (isEmptyObject(schemaErrorsRef.current)) {
+                        if (isEmptyObject(schemaErrorsRef.current))
                             render({});
-                        }
                     });
                 }
                 else {
                     validateField(currentField, fields).then(error => {
-                        if (isEmptyObject(error)) {
+                        if (isEmptyObject(error))
                             validFieldsRef.current.add(name);
-                        }
                         if (validFieldsRef.current.size ===
-                            fieldsWithValidationRef.current.size) {
+                            fieldsWithValidationRef.current.size)
                             render({});
-                        }
                     });
                 }
             }
         }
-        if (!defaultValuesRef.current[typedName]) {
+        if (!defaultValuesRef.current[typedName])
             defaultValuesRef.current[typedName] = getFieldValue(fields, currentField.ref);
-        }
-        if (!type) {
+        if (!type)
             return;
-        }
         const fieldToRegister = isRadio && currentField.options
             ? currentField.options[currentField.options.length - 1]
             : currentField;
-        if (isOnSubmit && isReValidateOnSubmit) {
+        if (isOnSubmit && isReValidateOnSubmit)
             return;
-        }
         if (nativeValidation && validateOptions) {
             attachNativeValidation(ref, validateOptions);
         }
@@ -844,17 +800,14 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
                 field: fieldToRegister,
                 isRadio,
                 validateAndStateUpdate: validateAndUpdateStateRef.current,
+                isOnBlur,
+                isReValidateOnBlur,
             });
         }
     }
     function register(refOrValidateRule, validationOptions) {
-        if (typeof window === UNDEFINED || !refOrValidateRule) {
+        if (typeof window === UNDEFINED || !refOrValidateRule)
             return;
-        }
-        if (validationOptions && typeof validationOptions.name === 'string') {
-            registerIntoFieldsRef({ name: validationOptions.name }, validationOptions);
-            return;
-        }
         if (isObject(refOrValidateRule) &&
             (validationOptions || 'name' in refOrValidateRule)) {
             registerIntoFieldsRef(refOrValidateRule, validationOptions);
@@ -863,9 +816,8 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
         return (ref) => ref && registerIntoFieldsRef(ref, refOrValidateRule);
     }
     function unregister(names) {
-        if (isEmptyObject(fieldsRef.current)) {
+        if (isEmptyObject(fieldsRef.current))
             return;
-        }
         (isArray(names) ? names : [names]).forEach(fieldName => removeEventListenerAndRef(fieldsRef.current[fieldName], true));
     }
     const handleSubmit = (callback) => async (e) => {
@@ -890,23 +842,20 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
         }
         else {
             const { errors, values, } = await fieldsToValidate.reduce(async (previous, field) => {
-                if (!field) {
+                if (!field)
                     return previous;
-                }
                 const resolvedPrevious = await previous;
                 const { ref, ref: { name }, } = field;
-                if (!fields[name]) {
+                if (!fields[name])
                     return Promise.resolve(resolvedPrevious);
-                }
                 const fieldError = await validateField(field, fields, nativeValidation);
                 if (fieldError[name]) {
                     resolvedPrevious.errors = Object.assign(Object.assign({}, resolvedPrevious.errors), fieldError);
                     validFieldsRef.current.delete(name);
                     return Promise.resolve(resolvedPrevious);
                 }
-                if (fieldsWithValidationRef.current.has(name)) {
+                if (fieldsWithValidationRef.current.has(name))
                     validFieldsRef.current.add(name);
-                }
                 resolvedPrevious.values[name] = getFieldValue(fields, ref);
                 return Promise.resolve(resolvedPrevious);
             }, Promise.resolve({
@@ -933,9 +882,8 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
             }
             errorsRef.current = fieldErrors;
         }
-        if (isUnMount.current) {
+        if (isUnMount.current)
             return;
-        }
         isSubmittedRef.current = true;
         isSubmittingRef.current = false;
         submitCountRef.current = submitCountRef.current + 1;
@@ -957,7 +905,7 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
     };
     const reset = React.useCallback((values) => {
         const fieldsKeyValue = Object.entries(fieldsRef.current);
-        for (const [, value] of fieldsKeyValue) {
+        for (let [, value] of fieldsKeyValue) {
             if (value && value.ref && value.ref.closest) {
                 try {
                     value.ref.closest('form').reset();
@@ -985,8 +933,11 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
             Object.values(fieldsRef.current).forEach((field) => removeEventListenerAndRef(field, true));
     }, [removeEventListenerAndRef]);
     return {
-        register: React.useCallback(register, []),
-        unregister: React.useCallback(unregister, [removeEventListenerAndRef]),
+        register: React.useCallback(register, [registerIntoFieldsRef]),
+        unregister: React.useCallback(unregister, [
+            unregister,
+            removeEventListenerAndRef,
+        ]),
         handleSubmit,
         watch,
         reset,
@@ -1000,7 +951,7 @@ function useForm({ mode = VALIDATION_MODE.onSubmit, reValidateMode = VALIDATION_
             : errorsRef.current,
         formState: Object.assign({ dirty: isDirtyRef.current, isSubmitted: isSubmittedRef.current, submitCount: submitCountRef.current, touched: [...touchedFieldsRef.current], isSubmitting: isSubmittingRef.current }, (isOnSubmit
             ? {
-                isValid: isSubmittedRef.current && isEmptyObject(errorsRef.current),
+                isValid: isEmptyObject(errorsRef.current),
             }
             : {
                 isValid: validationSchema
